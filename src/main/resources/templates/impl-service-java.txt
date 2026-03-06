@@ -8,6 +8,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import [(${config.packageName})].model.dto.BaseIdsDTO;
 import [(${config.packageName})].model.dto.BaseIdDTO;
+import com.oga.mcn.service.model.dto.BaseKeyDTO;
 import [(${config.packageName})].model.vo.BaseIdVO;
 import [(${config.packageName})].module.[(${table.config.catalog})].entity.[(${table.className})]Entity;
 import [(${config.packageName})].module.[(${table.config.catalog})].dto.[(${table.className})]DTO;
@@ -59,9 +60,18 @@ public class [(${table.className})]ServiceImpl extends ServiceImpl<[(${table.cla
     * PAGING DATA
     */
     @Override
-    public PagingVO<[(${table.className})]VO> [(${table.config.className})]Paging(PagingDTO<[(${table.className})]DTO> dto) {
+    public PagingVO<[(${table.className})]VO> [(${table.config.className})]Paging(PagingDTO<BaseKeyDTO> dto) {
         Page<[(${table.className})]Entity> query = new Page<>(dto.getCurrent(), dto.getSize());
         LambdaQueryWrapper<[(${table.className})]Entity> queryWrapper = new LambdaQueryWrapper<>();
+        String keyword = dto.getParams().getQ();
+
+        //if (StringUtil.isNotEmpty(keyword)) {
+        //    queryWrapper.and(obj ->
+        //            obj.like(BaseEquipmentEntity::getModelNumber, keyword)
+        //                    .or().like(BaseEquipmentEntity::getSerialNumber, keyword)
+        //    );
+        //}
+
         IPage<[(${table.className})]Entity> pageData = this.page(query, queryWrapper);
         return JSON.parseObject(JSON.toJSONString(pageData), new TypeReference<PagingVO<[(${table.className})]VO>>(){});
      }

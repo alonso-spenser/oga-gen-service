@@ -1,0 +1,37 @@
+import { CreatePageStore } from "../create-page-store";
+
+/**
+ * [(${table.describe})]
+ * [(${table.config.routerName})]-store.ts
+ */
+export interface [# th:text="${table.className}" /]Result {
+[# th:each="item, stat: ${table.children}"]
+  [# th:text="${item.javaName}" /]?: [# th:text="${item.tsType}" /];
+[/]
+}
+
+/**
+ * [(${table.describe})]
+ */
+export interface [# th:text="${table.className}" /]Request {
+[# th:each="item, stat: ${table.children}"]
+  [# th:text="${item.javaName}" /]?: [# th:text="${item.tsType}" /];
+[/]
+}
+
+/**
+ * Default [(${table.describe})] Form Model
+ */
+export const default[# th:text="${table.className}" /]Request: [# th:text="${table.className}" /]Request = {
+[# th:each="item, stat: ${table.children}"]
+  [# th:text="${item.javaName}" /]: [# th:utext="${item.tsDefaultValue}" /],
+[/]
+};
+
+/**
+ * [(${table.describe})]
+ */
+export const use[# th:text="${table.className}" /]Store = CreatePageStore<[# th:text="${table.className}" /]Request>(
+  "[# th:text="${table.lowerClassName}" /]",
+  default[# th:text="${table.className}" /]Request,
+);

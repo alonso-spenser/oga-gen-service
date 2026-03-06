@@ -1,6 +1,5 @@
 package com.gen.service.utility;
 
-
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -61,7 +60,9 @@ public class StringUti {
      * @param name Table Name
      */
     public static String firstUpperCase(String name) {
-        name = name.substring(0, 1).toUpperCase() + name.substring(1);
+        if (name != null && name.length() >= 2) {
+            name = name.substring(0, 1).toUpperCase() + name.substring(1);
+        }
         return name;
     }
 }

@@ -1,0 +1,373 @@
+<template>
+  <oga-page :offset="240" :percentage="100" v-loading="state.loading">
+    <template #header>
+      <div class="oga-filter">
+        <div class="oga-filter-item">
+          <oga-input
+            :label="t('placeholder.label')"
+            :placeholder="t('placeholder.search')"
+            clearable
+            v-model="pageQueryState.params.q"
+            @clear="clearSearchCondition"
+          >
+            <template #append>
+              <el-button :loading="state.loading" @click="filterData">
+                <oga-icon name="search"></oga-icon>
+              </el-button>
+            </template>
+          </oga-input>
+        </div>
+        <div class="oga-filter-item">
+          <el-button class="el-material-button" type="text" @click="clearSearchCondition">
+            <oga-icon name="refresh"></oga-icon>
+          </el-button>
+          <el-button class="el-material-button" @click="add[(${table.config.fun})]Drawer">
+            <oga-icon name="plus"></oga-icon>
+          </el-button>
+        </div>
+        <div class="oga-filter-item text-count">
+          <small class="text-secondary mr-2">
+            {{ t("total") }}
+          </small>
+          <small class="text-primary">
+            {{ pageResult.total }}
+          </small>
+        </div>
+        <div class="oga-filter-item"></div>
+      </div>
+    </template>
+    <oga-table v-model="pageResult" v-bind="paginationState" @paging="getData">
+    </oga-table>
+    <el-drawer
+      v-model="state.drawer"
+      ref="drawerInstance"
+      :close-on-press-escape="false"
+      :append-to-body="true"
+      :wrapper-closable="false"
+      size="40%"
+      destroy-on-close
+      :close-on-click-modal="false"
+      @close="onDrawerClose"
+      class="oga-drawer"
+    >
+      <template #header>
+        <h3>
+          {{ formModel.id ? t('[(${table.config.catalog})].[(${table.config.i18n})].updateTitle') : t('[(${table.config.catalog})].[(${table.config.i18n})].addTitle') }}
+        </h3>
+      </template>
+      <div class="oga-drawer-container">
+        <el-form
+          ref="formInstance"
+          :model="formModel"
+          :rules="formRules"
+          class="oga-form"
+        >
+          <el-row :gutter="20" class="el-form-item">
+            <el-col :span="12">
+            [# th:each="item,stat: ${table.children}"][# th:if="${item.primary == 0 && stat.index % 2 == 0}"]
+              <el-form-item prop="[(${item.javaName})]">
+                <oga-input
+                  v-model="formModel.[(${item.javaName})]"
+                  :label="t('[(${table.config.catalog})].[(${table.config.i18n})].entity.[(${item.javaName})].label')"
+                  :placeholder="t('[(${table.config.catalog})].[(${table.config.i18n})].entity.[(${item.javaName})].placeholder')"
+                ></oga-input>
+              </el-form-item>
+            [/][/]
+            </el-col>
+            <el-col :span="12">
+              [# th:each="item,stat: ${table.children}"][# th:if="${item.primary == 0 && stat.index % 2 == 1}"]
+                <el-form-item prop="[(${item.javaName})]">
+                  <oga-input
+                    v-model="formModel.[(${item.javaName})]"
+                    :label="t('[(${table.config.catalog})].[(${table.config.i18n})].entity.[(${item.javaName})].label')"
+                    :placeholder="t('[(${table.config.catalog})].[(${table.config.i18n})].entity.[(${item.javaName})].placeholder')"
+                  ></oga-input>
+                </el-form-item>
+              [/][/]
+            </el-col>
+          </el-row>
+        </el-form>
+        <oga-unsaved
+          round
+          offset="60%"
+          v-model="state.unsaved"
+          :loading="state.submitting"
+          @cancel="cancelUpdate"
+          @confirmed="formSubmit(formInstance)"
+        >
+        </oga-unsaved>
+      </div>
+    </el-drawer>
+  </oga-page>
+</template>
+
+<script setup lang="tsx">
+import { nextTick, ref, watch } from "vue";
+import type { FormInstance, FormRules, TableColumnCtx } from "element-plus";
+import { isEmpty } from "@/plugins/utility";
+import { formValidation } from "@/plugins/form";
+import { usePageState } from "@/plugins/page/page-state";
+import { ActionType } from "@/stores/type/page-type";
+import i18n from "@/plugins/i18n/base";
+import {
+  type [# th:text="${table.className}" /]Result,
+  type [# th:text="${table.className}" /]Request,
+  use[# th:text="${table.className}" /]Store,
+} from "@/stores/page/[(${table.config.routerName})]-store";
+import {
+  fetch[(${table.config.prefix})]Detail,
+  fetch[(${table.config.prefix})]Update,
+  fetch[(${table.config.prefix})]Paging,
+  fetch[(${table.config.prefix})]Delete
+} from '@/plugins/api/[(${table.config.catalog})]'
+
+/**
+ * i18n
+ */
+const t = i18n.global.t;
+
+/**
+ * Page state
+ */
+const { state, pageState, pageQueryState, pageResult, paginationState } =
+  usePageState<[# th:text="${table.className}" /]Result>();
+
+/**
+ * Search parameters
+ */
+// pageQueryState.params = {
+//   ...pageQueryState.params,
+//   state: null,
+// }
+
+/**
+ * [(${table.config.fun})] Store
+ */
+const accountStore = use[# th:text="${table.className}" /]Store();
+
+/**
+ * Table configuration
+ */
+pageState.updatePaginationState({
+  actionList: {
+    rowClick: (row: [# th:text="${table.className}" /]Result, column: TableColumnCtx) => {
+      columnEvents(row, column);
+    },
+    delete: {
+      icon: "",
+      label: t("delete.drop"),
+      onClick: (rows: Array<[# th:text="${table.className}" /]Result>) => {
+        delete[(${table.config.fun})](rows);
+      },
+    },
+  },
+
+  columnList: [[# th:each="item,stat: ${table.children}"]
+    [# th:if="${item.primary == 0}"]{
+      prop: '[# th:text="${item.javaName}" /]',
+      label: t('[(${table.config.catalog})].[(${table.config.i18n})].tableHeader.[# th:text="${item.javaName}" /]')
+    }[# th:if="${not stat.last}" th:text="','" /][/]
+  [/]],
+
+  empty: {
+    content: t("account.empty.content"),
+    buttonLabel: t("account.empty.buttonLabel"),
+    onClick: () => {
+      add[(${table.config.fun})]Drawer()
+    },
+  },
+});
+
+/**
+ * Load cached query state
+ */
+pageState.loadCache(accountStore.pageQueryState, accountStore.normalQueryState);
+
+/**
+ * Form instance
+ */
+const formInstance = ref<FormInstance>();
+
+/**
+ * Form model
+ */
+const formModel = ref<[# th:text="${table.className}" /]Request>(accountStore.getDefaultModel());
+
+/**
+ * Form rules
+ */
+const formRules = ref<FormRules<[# th:text="${table.className}" /]Request>>({
+[# th:each="item,stat: ${table.children}"][# th:if="${item.primary == 0}"]
+[(${item.javaName})]: [
+  {
+    required: true,
+    message: t('[(${table.config.catalog})].[(${table.config.i18n})].entity.[(${item.javaName})].required'),
+    trigger: 'blur'
+  }
+][# th:if="${not stat.last}" th:text="','" /][/][/]
+});
+
+/**
+ * Drawer close
+ */
+const onDrawerClose = () => {
+  formInstance.value?.resetFields();
+};
+
+/**
+ * Cancel update
+ */
+const cancelUpdate = () => {
+  state.value.drawer = false;
+};
+
+/**
+ * Add an account drawer
+ */
+const add[(${table.config.fun})]Drawer = () => {
+  formModel.value = { ...accountStore.getDefaultModel() };
+  state.value.drawer = true;
+
+  nextTick(() => {
+    state.value.unsaved = false;
+  });
+};
+
+/**
+ * Get detail
+ */
+const getDetail = async () => {
+  if (isEmpty(formModel.value.id)) return;
+
+  const data = await pageState.resolveApiResponse<[# th:text="${table.className}" /]Result>(
+    fetch[# th:text="${table.className}" /]Detail({ id: formModel.value.id }),
+  );
+
+  if (data) {
+    formModel.value = { ...data };
+    state.value.drawer = true;
+
+    await nextTick(() => {
+      state.value.unsaved = false;
+    });
+  }
+};
+
+/**
+ * Clear search condition
+ */
+const clearSearchCondition = () => {
+  pageQueryState.params = {
+    ...pageQueryState.params,
+    q : "",
+    current: 1,
+  }
+  getData();
+};
+
+/**
+ * Filter data
+ */
+const filterData = () => {
+  getData();
+};
+
+/**
+ * Get paging data
+ */
+const getData = async () => {
+  const { current, size } = pageResult.value;
+
+  accountStore.updatePageQueryState({
+    current,
+    size,
+  });
+
+  await pageState.resolveApiResponse(
+    fetch[# th:text="${table.className}" /]Paging({
+      ...pageQueryState,
+      current,
+      size,
+    }),
+  );
+};
+
+/**
+ * Form submit
+ */
+const formSubmit = (formEl?: FormInstance) => {
+  if (!formEl) return;
+
+  formValidation(formEl, () => {
+    update[(${table.config.fun})]();
+  });
+};
+
+/**
+ * Table row click
+ */
+const columnEvents = (row: [# th:text="${table.className}" /]Result, column: TableColumnCtx) => {
+  formModel.value.id = row.id;
+  getDetail();
+};
+
+/**
+ * Update account
+ */
+const update[(${table.config.fun})] = async () => {
+  const response = await pageState.submitApiRequest<[# th:text="${table.className}" /]Request>(
+    fetch[# th:text="${table.className}" /]Update(formModel.value),
+    formModel.value.id ? ActionType.Update : ActionType.Insert,
+  );
+
+  if (response.success) {
+    await getData();
+  }
+};
+
+/**
+ * Delete
+ */
+const delete[(${table.config.fun})] = async (rows: [# th:text="${table.className}" /]Result[]) => {
+  const ids = rows.map((row) => row.id);
+  await pageState.confirmDelete(async () => {
+    const response = await pageState.submitApiRequest<[# th:text="${table.className}" /]Request>(
+      fetch[# th:text="${table.className}" /]Delete({ ids }),
+      ActionType.Delete,
+    );
+    if (response.success) {
+      await getData();
+    }
+  }, ids.length);
+};
+
+/**
+ * Unsaved detection
+ */
+watch(
+  () => formModel.value,
+  () => {
+    state.value.unsaved = true;
+  },
+  { deep: true },
+);
+
+/**
+ * Search criteria changed;
+ * reloading data.
+ */
+watch(
+    () => pageQueryState,
+    () => {
+      getData()
+    },
+    { deep: true },
+);
+
+/**
+ * Initial load
+ */
+getData();
+</script>
+
+<style lang="scss"></style>

@@ -1,32 +1,105 @@
 import { defineStore } from "pinia";
+import type { PageQuery } from "@/stores/type/page";
 
 /**
  * [(${table.describe})]
  */
-export interface [# th:text="${table.className}" /]State {
+export interface [# th:text="${table.className}" /]Model {
 [# th:each="item, stat: ${table.children}"]
-  [# th:text="${item.javaName}" /]: [# th:text="${item.tsType}" /];
+  [# th:text="${item.javaName}" /]?: [# th:text="${item.tsType}" /];
 [/]
 }
+
+/**
+ * Default [(${table.describe})] Form Model
+ */
+const default[# th:text="${table.className}" /]Model: [# th:text="${table.className}" /]Model = {
+[# th:each="item, stat: ${table.children}"]
+  [# th:text="${item.javaName}" /]: [# th:utext="${item.tsDefaultValue}" /],
+[/]
+};
 
 /**
  * [(${table.describe})]
  */
 export const use[# th:text="${table.className}" /]Store = defineStore("[# th:text="${table.lowerClassName}" /]Store", {
   persist: true,
-  state: () => {
-    return {
-    [# th:each="item, stat: ${table.children}"]
-      [# th:text="${item.javaName}" /]: [# th:utext="${item.tsDefaultValue}" /],
-    [/]
-    };
-  },
+  state: () => ({
+    pageQuery: {
+      current: 1,
+      size: 10,
+      params: {},
+    } as PageQuery,
+    normalQuery: {} as Record<string, any>,
+    formModel: { ...default[# th:text="${table.className}" /]Model } as [# th:text="${table.className}" /]Model,
+  }),
+
   actions: {
-    update([# th:text="${table.lowerClassName}" /]State: [# th:text="${table.className}" /]State) {
-      this.$state = {
-        ...this.$state,
-        ...[# th:text="${table.lowerClassName}" /]State,
+    /**
+     * Pagination Query
+     * @param query Partial<PageQuery>
+     */
+    setPageQuery(query: Partial<PageQuery>) {
+      this.pageQuery = {
+        ...this.pageQuery,
+        ...query,
+        params: {
+          ...this.pageQuery.params,
+          ...query.params,
+        },
       };
+    },
+
+    /**
+     * Reset Pagination Query
+     */
+    resetPageQuery() {
+      this.pageQuery = {
+        current: 1,
+        size: 10,
+        params: {},
+      };
+    },
+
+    /**
+     * Normal Query
+     * @param params Record<string, any>
+     */
+    setNormalQuery(params: Record<string, any>) {
+      this.normalQuery = {
+        ...this.normalQuery,
+        ...params,
+      };
+    },
+
+    /**
+     * Reset Normal Query
+     */
+    resetNormalQuery() {
+      this.normalQuery = {};
+    },
+
+    /**
+     * Set Form Model
+     * @param data [# th:text="${table.className}" /]Model
+     */
+    setFormModel(data: [# th:text="${table.className}" /]Model) {
+      this.formModel = { ...default[# th:text="${table.className}" /]Model, ...data };
+    },
+
+    /**
+     * Get Form Model
+     * @returns [# th:text="${table.className}" /]Model
+     */
+    getFormModel(): [# th:text="${table.className}" /]Model {
+      return this.formModel;
+    },
+
+    /**
+     * Reset Form Model
+     */
+    resetFormModel() {
+      this.formModel = { ...default[# th:text="${table.className}" /]Model };
     },
   },
 });

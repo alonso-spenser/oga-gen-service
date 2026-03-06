@@ -5,6 +5,7 @@ import [(${config.packageName})].model.dto.PagingDTO;
 import [(${config.packageName})].model.vo.PagingVO;
 import [(${config.packageName})].model.dto.BaseIdsDTO;
 import [(${config.packageName})].model.dto.BaseIdDTO;
+import com.oga.mcn.service.model.dto.BaseKeyDTO;
 import [(${config.packageName})].model.vo.BaseIdVO;
 import [(${config.packageName})].module.[(${table.config.catalog})].entity.[(${table.className})]Entity;
 import [(${config.packageName})].module.[(${table.config.catalog})].dto.[(${table.className})]DTO;
@@ -29,7 +30,7 @@ public interface [(${table.className})]Service extends IService<[(${table.classN
     /**
     * PAGING DATA
     */
-    PagingVO<[(${table.className})]VO> [(${table.config.className})]Paging(PagingDTO<[(${table.className})]DTO> dto);
+    PagingVO<[(${table.className})]VO> [(${table.config.className})]Paging(PagingDTO<BaseKeyDTO> dto);
 
     /**
     * DETAIL DATA

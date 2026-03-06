@@ -3,12 +3,13 @@ package [(${config.packageName})].module.[(${table.config.catalog})].controller.
 import [(${config.packageName})].common.exception.ApiRest;
 import [(${config.packageName})].common.controller.BaseController;
 import [(${config.packageName})].common.annotation.MerchantInject;
-import [(${config.packageName})].model.vo.BaseIdVO;
 import [(${config.packageName})].model.dto.BaseIdDTO;
 import [(${config.packageName})].model.dto.PagingDTO;
-import [(${config.packageName})].model.vo.PagingVO;
 import [(${config.packageName})].model.dto.BaseIdsDTO;
+import com.oga.mcn.service.model.dto.BaseKeyDTO;
 import [(${config.packageName})].model.vo.BaseVO;
+import [(${config.packageName})].model.vo.PagingVO;
+import [(${config.packageName})].model.vo.BaseIdVO;
 import [(${config.packageName})].module.[(${table.config.catalog})].dto.[(${table.className})]DTO;
 import [(${config.packageName})].module.[(${table.config.catalog})].vo.[(${table.className})]VO;
 import [(${config.packageName})].module.[(${table.config.catalog})].service.[(${table.className})]Service;
@@ -54,7 +55,7 @@ public class [(${table.className})]ApiController extends BaseController {
     @RequestMapping(value = "/delete", method = { RequestMethod.POST})
     public ApiRest<BaseVO> [(${table.config.className})]Delete(@RequestBody BaseIdsDTO dto) {
         baseService.[(${table.config.className})]Delete(dto);
-        return super.success();
+        return super.success(new BaseVO());
     }
 
     /**
@@ -73,7 +74,7 @@ public class [(${table.className})]ApiController extends BaseController {
     @MerchantInject
     @ApiOperation(value = "PAGING DATA")
     @RequestMapping(value = "/paging", method = { RequestMethod.POST})
-    public ApiRest<PagingVO<[(${table.className})]VO>> [(${table.config.className})]Paging(@RequestBody PagingDTO<[(${table.className})]DTO> dto) {
+    public ApiRest<PagingVO<[(${table.className})]VO>> [(${table.config.className})]Paging(@RequestBody PagingDTO<BaseKeyDTO> dto) {
         return super.success(baseService.[(${table.config.className})]Paging(dto));
     }
 

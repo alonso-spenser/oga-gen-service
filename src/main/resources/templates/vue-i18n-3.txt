@@ -1,0 +1,25 @@
+export default {
+  [(${table.config.catalog})]: {
+    [(${table.config.i18n})]: {
+      title: '[(${table.describe})]',
+      add: 'Add [(${table.describe})]',
+      edit: 'Edit [(${table.describe})]',
+      addTitle: 'Add [(${table.describe})]',
+      updateTitle: 'Edit [(${table.describe})]',
+      empty: {
+        content: 'The added [(${table.describe})] will be listed here. You can manage all [(${table.describe})] here, such as batch deletion, modification, etc.',
+        buttonLabel: 'Add [(${table.describe})]'
+      },
+      tableHeader: {[# th:each="item, stat: ${table.children}"]
+        [# th:if="${item.primary == 0}"][# th:text="${item.javaName}" /]: '[# th:text="${item.describe}" /]'[# th:if="${not stat.last}" th:text="','" /][/]
+      [/]},
+      entity: {[# th:each="item,stat: ${table.children}"]
+        [# th:if="${item.primary == 0}"][# th:text="${item.javaName}" /]: {
+          label: '[# th:text="${item.describe}" /]',
+          placeholder: 'Please enter [# th:text="${item.describe}" /]',
+          required: ''
+        }[# th:if="${not stat.last}" th:text="','" /][/]
+      [/]}
+    }
+  }
+}

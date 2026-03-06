@@ -55,6 +55,12 @@ public class TableVO extends BaseVO {
     private String name;
 
     /**
+     * Primary Key
+     */
+    @ApiModelProperty(value = "Primary Key")
+    private String primaryKey;
+
+    /**
      * Vue Config
      */
     private VueConfigVO config;

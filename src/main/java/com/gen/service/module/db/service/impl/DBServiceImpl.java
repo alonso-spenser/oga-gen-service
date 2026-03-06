@@ -108,6 +108,7 @@ public class DBServiceImpl implements DBService {
                 String tableName = m.get("TableName").toString();
                 if (!tabs.contains(tableName)) {
                     TableVO tableVO = new TableVO();
+                    String primaryKey = "";
                     List<String> dbType = new ArrayList<>();
                     tableVO.setDescribe(m.get("TableDesc").toString())
                             .setName(tableName)
@@ -147,7 +148,9 @@ public class DBServiceImpl implements DBService {
                                     .setTsDefaultValue(filedTypeVO.getTsDefaultValue())
                                     .setTsType(filedTypeVO.getTsType())
                                     .setIsLeaf(false);
-
+                            if (filed.getPrimary() == 1) {
+                                primaryKey = filed.getJavaName();
+                            }
                             fields.add(filed);
 
                             if (StringUtils.isEmpty(filed.getDescribe())) {
@@ -157,6 +160,7 @@ public class DBServiceImpl implements DBService {
                     }
                     tableVO.setDbType(dbType)
                             .setChildren(fields)
+                            .setPrimaryKey(primaryKey)
                             .setConfig(this.getVueConfig(tableVO, dto.getConfig()));
                     tables.add(tableVO);
                     tabs.add(tableName);
@@ -274,7 +278,7 @@ public class DBServiceImpl implements DBService {
                 filedTypeVO.setName("Long");
                 filedTypeVO.setValue("0");
                 filedTypeVO.setTsType("bigint");
-                filedTypeVO.setTsDefaultValue("0");
+                filedTypeVO.setTsDefaultValue("0n");
                 break;
             case "date":
             case "time":

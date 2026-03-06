@@ -1,0 +1,149 @@
+<template>
+  <oga-page
+    :offset="240"
+    :percentage="100"
+    v-loading="pageState.loading"
+  >
+      <el-form
+        ref="formInstance"
+        :model="formModel"
+        :rules="formRules"
+        class="oga-form"
+      >
+        <oga-section>
+          [# th:each="item,stat: ${table.children}"][# th:if="${item.primary == 0}"]
+          <el-form-item prop="[(${item.javaName})]">
+            <oga-input
+              v-model="formModel.[(${item.javaName})]"
+              :label="i18n.global.t('[(${table.config.catalog})].[(${table.config.i18n})].entity.[(${item.javaName})].label')"
+              :placeholder="i18n.global.t('[(${table.config.catalog})].[(${table.config.i18n})].entity.[(${item.javaName})].placeholder')"
+            ></oga-input>
+          </el-form-item>
+          [/][/]
+        </oga-section>
+      </el-form>
+      <oga-unsaved
+        round
+        :unsaved.sync="pageState.unsaved"
+        :loading="pageState.submitting"
+        @confirmed="formSubmit(formInstance)"
+      >
+      </oga-unsaved>
+  </oga-page>
+</template>
+
+<script setup lang="ts">
+import { ref, nextTick } from "vue";
+import type { FormInstance, FormRules } from 'element-plus'
+import { isEmpty } from "@/plugins/utility";
+import { formReset, formValidation } from "@/plugins/form";
+import { resultMessage, networkMistake, getPrimaryID, ActionType, type PageState } from "@/plugins/page";
+import i18n from "@/plugins/i18n/base";
+import {
+  fetch[(${table.config.prefix})]Detail,
+  fetch[(${table.config.prefix})]Update,
+} from '@/plugins/api/[(${table.config.catalog})]'
+
+/**
+ * Page State
+*/
+const pageState = ref<PageState>({
+  loading: false
+})
+
+/**
+ * Form Instance
+ */
+const formInstance = ref<FormInstance>()
+
+/**
+ * Form Model
+ */
+const formModel = ref({
+    [# th:each="item,stat: ${table.children}"]
+    [(${item.javaName})]: [(${item.defaultValue})][# th:if="${not stat.last}" th:text="','" /][/]
+})
+
+/**
+ * Form Rules
+ */
+const formRules = ref<FormRules<typeof formModel>>({
+[# th:each="item,stat: ${table.children}"][# th:if="${item.primary == 0}"]
+[(${item.javaName})]: [
+    {
+        required: true,
+        message: i18n.global.t('[(${table.config.catalog})].[(${table.config.i18n})].entity.[(${item.javaName})].required'),
+        trigger: 'blur'
+    }
+][# th:if="${not stat.last}" th:text="','" /][/][/]
+})
+
+/**
+ * GET DETAIL DATE
+ */
+const getDetail = () => {
+    if (isEmpty(formModel.value.[(${table.primaryKey})])) return
+    pageState.value.loading = true
+    fetch[(${table.config.prefix})]Detail({
+        id: getPrimaryID()
+    })
+    .then((result) => {
+      //this.pageValid()
+      resultMessage((result), (success: boolean) => {
+        if (success) {
+          formModel.value = result.data
+          nextTick(() => {
+            pageState.value.unsaved = false
+          })
+        }
+      })
+      pageState.value.loading = false
+    })
+    .catch((error) => {
+        pageState.value.loading = false
+      //this.pageInvalid(error)
+    })
+}
+
+/**
+ * Form Validation & Submit
+ * @param formEl
+ */
+const formSubmit = (formEl: FormInstance | undefined) => {
+  if (!formEl) return
+  formValidation(formEl, ()=> {
+    update[(${table.config.fun})]()
+  })
+}
+
+/**
+ * UPDATE
+ */
+const update[(${table.config.fun})] = () => {
+    pageState.value.submitting = true
+    fetch[(${table.config.prefix})]Update(formModel.value)
+    .then((result) => {
+      resultMessage((result), (success: boolean) => {
+        if (success) {
+          // this.previous()
+        }
+      }, ActionType.update)
+      pageState.value.submitting = false
+      pageState.value.unsaved = false
+    })
+    .catch((error: any) => {
+        pageState.value.submitting = false
+        networkMistake(error)
+    })
+}
+
+/**
+ * watch
+ */
+watch(formModel, () => {
+      pageState.value.unsaved = true
+    },
+    { deep: true },
+);
+getDetail()
+</script>
