@@ -1,149 +1,174 @@
 <template>
-  <oga-page
-    :offset="240"
-    :percentage="100"
-    v-loading="pageState.loading"
-  >
-      <el-form
-        ref="formInstance"
-        :model="formModel"
-        :rules="formRules"
-        class="oga-form"
-      >
-        <oga-section>
-          [# th:each="item,stat: ${table.children}"][# th:if="${item.primary == 0}"]
+  <oga-page :offset="240" :percentage="100" v-loading="state.loading">
+    <el-form
+      ref="formInstance"
+      :model="formModel"
+      :rules="formRules"
+      class="oga-form"
+    >
+      <el-row :gutter="20" class="el-form-item">
+        <el-col :span="12">
+        [# th:each="item,stat: ${table.children}"][# th:if="${item.primary == 0 && stat.index % 2 == 0}"]
           <el-form-item prop="[(${item.javaName})]">
             <oga-input
               v-model="formModel.[(${item.javaName})]"
-              :label="i18n.global.t('[(${table.config.catalog})].[(${table.config.i18n})].entity.[(${item.javaName})].label')"
-              :placeholder="i18n.global.t('[(${table.config.catalog})].[(${table.config.i18n})].entity.[(${item.javaName})].placeholder')"
+              :label="t('[(${table.config.catalog})].[(${table.config.i18n})].entity.[(${item.javaName})].label')"
+              :placeholder="t('[(${table.config.catalog})].[(${table.config.i18n})].entity.[(${item.javaName})].placeholder')"
             ></oga-input>
           </el-form-item>
+        [/][/]
+        </el-col>
+        <el-col :span="12">
+          [# th:each="item,stat: ${table.children}"][# th:if="${item.primary == 0 && stat.index % 2 == 1}"]
+            <el-form-item prop="[(${item.javaName})]">
+              <oga-input
+                v-model="formModel.[(${item.javaName})]"
+                :label="t('[(${table.config.catalog})].[(${table.config.i18n})].entity.[(${item.javaName})].label')"
+                :placeholder="t('[(${table.config.catalog})].[(${table.config.i18n})].entity.[(${item.javaName})].placeholder')"
+              ></oga-input>
+            </el-form-item>
           [/][/]
-        </oga-section>
-      </el-form>
-      <oga-unsaved
-        round
-        :unsaved.sync="pageState.unsaved"
-        :loading="pageState.submitting"
-        @confirmed="formSubmit(formInstance)"
-      >
-      </oga-unsaved>
+        </el-col>
+      </el-row>
+    </el-form>
+    <oga-unsaved
+      round
+      offset="60%"
+      v-model="state.unsaved"
+      :loading="state.submitting"
+      @cancel="cancelUpdate"
+      @confirmed="formSubmit(formInstance)"
+    >
+    </oga-unsaved>
   </oga-page>
 </template>
 
-<script setup lang="ts">
-import { ref, nextTick } from "vue";
-import type { FormInstance, FormRules } from 'element-plus'
+<script setup lang="tsx">
+import { nextTick, ref, watch } from "vue";
+import type { FormInstance, FormRules } from "element-plus";
 import { isEmpty } from "@/plugins/utility";
-import { formReset, formValidation } from "@/plugins/form";
-import { resultMessage, networkMistake, getPrimaryID, ActionType, type PageState } from "@/plugins/page";
+import { formValidation } from "@/plugins/form";
+import { usePageState } from "@/plugins/page/page-state";
+import { ActionType, ColumnType } from "@/stores/type/page-type";
 import i18n from "@/plugins/i18n/base";
+import {
+  type [# th:text="${table.className}" /]Result,
+  type [# th:text="${table.className}" /]Request,
+  use[# th:text="${table.className}" /]Store,
+} from "@/stores/page/[(${table.config.routerName})]-store";
 import {
   fetch[(${table.config.prefix})]Detail,
   fetch[(${table.config.prefix})]Update,
+  fetch[(${table.config.prefix})]Paging,
+  fetch[(${table.config.prefix})]Delete
 } from '@/plugins/api/[(${table.config.catalog})]'
 
 /**
- * Page State
-*/
-const pageState = ref<PageState>({
-  loading: false
-})
+ * i18n
+ */
+const t = i18n.global.t;
 
 /**
- * Form Instance
+ * Page state
  */
-const formInstance = ref<FormInstance>()
+const { state, pageState, pageQueryState, pageResult, paginationState } =
+  usePageState<[# th:text="${table.className}" /]Result>();
 
 /**
- * Form Model
+ * [(${table.config.fun})] Store
  */
-const formModel = ref({
-    [# th:each="item,stat: ${table.children}"]
-    [(${item.javaName})]: [(${item.defaultValue})][# th:if="${not stat.last}" th:text="','" /][/]
-})
+const [# th:text="${table.lowerClassName}" /]Store = use[# th:text="${table.className}" /]Store();
 
 /**
- * Form Rules
+ * Form instance
  */
-const formRules = ref<FormRules<typeof formModel>>({
+const formInstance = ref<FormInstance>();
+
+/**
+ * Form model
+ */
+const formModel = ref<[# th:text="${table.className}" /]Request>([# th:text="${table.lowerClassName}" /]Store.getDefaultModel());
+
+/**
+ * Form rules
+ */
+const formRules = ref<FormRules<[# th:text="${table.className}" /]Request>>({
 [# th:each="item,stat: ${table.children}"][# th:if="${item.primary == 0}"]
 [(${item.javaName})]: [
-    {
-        required: true,
-        message: i18n.global.t('[(${table.config.catalog})].[(${table.config.i18n})].entity.[(${item.javaName})].required'),
-        trigger: 'blur'
-    }
+  {
+    required: true,
+    message: t('[(${table.config.catalog})].[(${table.config.i18n})].entity.[(${item.javaName})].required'),
+    trigger: 'blur'
+  }
 ][# th:if="${not stat.last}" th:text="','" /][/][/]
-})
+});
 
 /**
- * GET DETAIL DATE
+ * Cancel update
  */
-const getDetail = () => {
-    if (isEmpty(formModel.value.[(${table.primaryKey})])) return
-    pageState.value.loading = true
-    fetch[(${table.config.prefix})]Detail({
-        id: getPrimaryID()
-    })
-    .then((result) => {
-      //this.pageValid()
-      resultMessage((result), (success: boolean) => {
-        if (success) {
-          formModel.value = result.data
-          nextTick(() => {
-            pageState.value.unsaved = false
-          })
-        }
-      })
-      pageState.value.loading = false
-    })
-    .catch((error) => {
-        pageState.value.loading = false
-      //this.pageInvalid(error)
-    })
-}
+const cancelUpdate = () => {
+  pageState.redirect('/[(${table.config.catalog})]/[(${table.config.path})]');
+};
 
 /**
- * Form Validation & Submit
- * @param formEl
+ * Get detail
  */
-const formSubmit = (formEl: FormInstance | undefined) => {
-  if (!formEl) return
-  formValidation(formEl, ()=> {
-    update[(${table.config.fun})]()
-  })
-}
+const getDetail = async () => {
+  if (isEmpty(pageState.getPrimaryId())) return;
+
+  const data = await pageState.resolveResponse<[# th:text="${table.className}" /]Result>(
+    fetch[# th:text="${table.className}" /]Detail({ id: pageState.getPrimaryId() }),
+  );
+
+  if (data) {
+    formModel.value = { ...data };
+
+    await nextTick(() => {
+      state.value.unsaved = false;
+    });
+  }
+};
 
 /**
- * UPDATE
+ * Form submit
  */
-const update[(${table.config.fun})] = () => {
-    pageState.value.submitting = true
-    fetch[(${table.config.prefix})]Update(formModel.value)
-    .then((result) => {
-      resultMessage((result), (success: boolean) => {
-        if (success) {
-          // this.previous()
-        }
-      }, ActionType.update)
-      pageState.value.submitting = false
-      pageState.value.unsaved = false
-    })
-    .catch((error: any) => {
-        pageState.value.submitting = false
-        networkMistake(error)
-    })
-}
+const formSubmit = (formEl?: FormInstance) => {
+  if (!formEl) return;
+
+  formValidation(formEl, () => {
+    update[(${table.config.fun})]();
+  });
+};
 
 /**
- * watch
+ * Update account
  */
-watch(formModel, () => {
-      pageState.value.unsaved = true
-    },
-    { deep: true },
+const update[(${table.config.fun})] = async () => {
+  const response = await pageState.submitRequest<[# th:text="${table.className}" /]Request>(
+    fetch[# th:text="${table.className}" /]Update(formModel.value),
+    formModel.value.id ? ActionType.Update : ActionType.Insert,
+  );
+
+  if (response.success) {
+    cancelUpdate();
+  }
+};
+
+/**
+ * Unsaved detection
+ */
+watch(
+  () => formModel.value,
+  () => {
+    state.value.unsaved = true;
+  },
+  { deep: true },
 );
-getDetail()
+
+/**
+ * Initial load
+ */
+getData();
 </script>
+
+<style lang="scss"></style>
