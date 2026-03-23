@@ -487,10 +487,11 @@ public class DBServiceImpl implements DBService {
         ApiRest<BaseStringVO> resultBase = new ApiRest<>();
         BaseStringVO baseString = new BaseStringVO();
         String html = "";
-        if (dto.getCodeType().equals("file")) {
+
+        if (dto.getCodeType().equals("file") || dto.getCodeType().equals("file17")) {
             generateFile(dto);
             html = "";
-        } else {
+        } else{
             html = ThymeleafHelper.generateTemplate(dto, dto.getCodeType());
         }
         baseString.setContent(html);
@@ -509,27 +510,50 @@ public class DBServiceImpl implements DBService {
         map.put("mapper-xml", new GenerateFileDTO().setPath(dto.getTable().getConfig().getMapperPath())
                 .setFileName(String.format("%s/%sMapper.xml", config.getMapperPath(), config.getPrefix()))
         );
-        map.put("controller-java", new GenerateFileDTO().setPath(String.format("%s/controller/api", config.getJavaPath()))
-                .setFileName(String.format("%s/controller/api/%sApiController.java", config.getJavaPath(), config.getPrefix()))
-        );
-        map.put("dto-java", new GenerateFileDTO().setPath(String.format("%s/dto", config.getJavaPath()))
-                .setFileName(String.format("%s/dto/%sDTO.java", config.getJavaPath(), config.getPrefix()))
-        );
-        map.put("vo-java", new GenerateFileDTO().setPath(String.format("%s/vo", config.getJavaPath()))
-                .setFileName(String.format("%s/vo/%sVO.java", config.getJavaPath(), config.getPrefix()))
-        );
-        map.put("entity-java", new GenerateFileDTO().setPath(String.format("%s/entity", config.getJavaPath()))
-                .setFileName(String.format("%s/entity/%sEntity.java", config.getJavaPath(), config.getPrefix()))
-        );
+
+        if (dto.getCodeType().equals("file")) {
+            map.put("controller-java", new GenerateFileDTO().setPath(String.format("%s/controller/api", config.getJavaPath()))
+                    .setFileName(String.format("%s/controller/api/%sApiController.java", config.getJavaPath(), config.getPrefix()))
+            );
+            map.put("dto-java", new GenerateFileDTO().setPath(String.format("%s/dto", config.getJavaPath()))
+                    .setFileName(String.format("%s/dto/%sDTO.java", config.getJavaPath(), config.getPrefix()))
+            );
+            map.put("vo-java", new GenerateFileDTO().setPath(String.format("%s/vo", config.getJavaPath()))
+                    .setFileName(String.format("%s/vo/%sVO.java", config.getJavaPath(), config.getPrefix()))
+            );
+            map.put("entity-java", new GenerateFileDTO().setPath(String.format("%s/entity", config.getJavaPath()))
+                    .setFileName(String.format("%s/entity/%sEntity.java", config.getJavaPath(), config.getPrefix()))
+            );
+            map.put("impl-service-java", new GenerateFileDTO().setPath(String.format("%s/service/impl", config.getJavaPath()))
+                    .setFileName(String.format("%s/service/impl/%sServiceImpl.java", config.getJavaPath(), config.getPrefix()))
+            );
+        }
+
+        if (dto.getCodeType().equals("file17")) {
+            map.put("controller-java-17", new GenerateFileDTO().setPath(String.format("%s/controller/api", config.getJavaPath()))
+                    .setFileName(String.format("%s/controller/api/%sApiController.java", config.getJavaPath(), config.getPrefix()))
+            );
+            map.put("dto-java-17", new GenerateFileDTO().setPath(String.format("%s/dto", config.getJavaPath()))
+                    .setFileName(String.format("%s/dto/%sDTO.java", config.getJavaPath(), config.getPrefix()))
+            );
+            map.put("vo-java-17", new GenerateFileDTO().setPath(String.format("%s/vo", config.getJavaPath()))
+                    .setFileName(String.format("%s/vo/%sVO.java", config.getJavaPath(), config.getPrefix()))
+            );
+            map.put("entity-java-17", new GenerateFileDTO().setPath(String.format("%s/entity", config.getJavaPath()))
+                    .setFileName(String.format("%s/entity/%sEntity.java", config.getJavaPath(), config.getPrefix()))
+            );
+            map.put("impl-service-java-17", new GenerateFileDTO().setPath(String.format("%s/service/impl", config.getJavaPath()))
+                    .setFileName(String.format("%s/service/impl/%sServiceImpl.java", config.getJavaPath(), config.getPrefix()))
+            );
+        }
+
         map.put("mapper-java", new GenerateFileDTO().setPath(String.format("%s/mapper", config.getJavaPath()))
                 .setFileName(String.format("%s/mapper/%sMapper.java", config.getJavaPath(), config.getPrefix()))
         );
         map.put("service-java", new GenerateFileDTO().setPath(String.format("%s/service", config.getJavaPath()))
                 .setFileName(String.format("%s/service/%sService.java", config.getJavaPath(), config.getPrefix()))
         );
-        map.put("impl-service-java", new GenerateFileDTO().setPath(String.format("%s/service/impl", config.getJavaPath()))
-                .setFileName(String.format("%s/service/impl/%sServiceImpl.java", config.getJavaPath(), config.getPrefix()))
-        );
+
 
         for (Map.Entry<String, GenerateFileDTO> entry : map.entrySet()) {
             DirectoryAction.Create(entry.getValue().getPath());

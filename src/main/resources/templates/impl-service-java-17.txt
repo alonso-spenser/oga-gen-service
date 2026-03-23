@@ -1,0 +1,87 @@
+package [(${config.packageName})].module.[(${table.config.catalog})].service.impl;
+
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import [(${config.packageName})].model.dto.BaseIdsDTO;
+import [(${config.packageName})].model.dto.BaseIdDTO;
+import com.oga.mcn.service.model.dto.BaseKeyDTO;
+import [(${config.packageName})].model.vo.BaseIdVO;
+import [(${config.packageName})].module.[(${table.config.catalog})].entity.[(${table.className})]Entity;
+import [(${config.packageName})].module.[(${table.config.catalog})].dto.[(${table.className})]DTO;
+import [(${config.packageName})].module.[(${table.config.catalog})].vo.[(${table.className})]VO;
+import [(${config.packageName})].module.[(${table.config.catalog})].mapper.[(${table.className})]Mapper;
+import [(${config.packageName})].module.[(${table.config.catalog})].service.[(${table.className})]Service;
+import [(${config.packageName})].model.dto.PagingDTO;
+import [(${config.packageName})].model.vo.PagingVO;
+import [(${config.packageName})].utility.BeanMapper;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import java.util.List;
+
+/**
+* [(${table.describe})]
+*/
+@Service
+public class [(${table.className})]ServiceImpl extends ServiceImpl<[(${table.className})]Mapper, [(${table.className})]Entity> implements [(${table.className})]Service {
+
+    /**
+    * SAVE OR UPDATE
+    */
+    @Override
+    @Transactional
+    public BaseIdVO [(${table.config.className})]SaveOrUpdate([(${table.className})]DTO dto) {
+        [(${table.className})]Entity entity = BeanMapper.map(dto, [(${table.className})]Entity.class);
+        this.saveOrUpdate(entity);
+        return new BaseIdVO(entity.getId());
+     }
+
+    /**
+    * DELETE
+    */
+    @Override
+    @Transactional
+    public void [(${table.config.className})]Delete(BaseIdsDTO dto) {
+        this.removeByIds(dto.getIds());
+    }
+
+    /**
+    * DETAIL DATA
+    */
+    @Override
+    public [(${table.className})]VO [(${table.config.className})]Detail(BaseIdDTO dto) {
+        [(${table.className})]Entity entity = this.getById(dto.getId());
+        return BeanMapper.map(entity, [(${table.className})]VO.class);
+    }
+
+    /**
+    * PAGING DATA
+    */
+    @Override
+    public PagingVO<[(${table.className})]VO> [(${table.config.className})]Paging(PagingDTO<BaseKeyDTO> dto) {
+        Page<[(${table.className})]Entity> query = new Page<>(dto.getCurrent(), dto.getSize());
+        LambdaQueryWrapper<[(${table.className})]Entity> queryWrapper = new LambdaQueryWrapper<>();
+        String keyword = dto.getParams().getQ();
+
+        //if (StringUtil.isNotEmpty(keyword)) {
+        //    queryWrapper.and(obj ->
+        //            obj.like(BaseEquipmentEntity::getModelNumber, keyword)
+        //                    .or().like(BaseEquipmentEntity::getSerialNumber, keyword)
+        //    );
+        //}
+
+        IPage<[(${table.className})]Entity> pageData = this.page(query, queryWrapper);
+        return PagingVO.fromBean(pageData, [(${table.className})]VO.class);
+     }
+
+    /**
+    * LIST DATA
+    */
+    @Override
+    public List<[(${table.className})]VO> [(${table.config.className})]List([(${table.className})]DTO dto) {
+        LambdaQueryWrapper<[(${table.className})]Entity> queryWrapper = new LambdaQueryWrapper<>();
+        List<[(${table.className})]Entity> list = this.list(queryWrapper);
+        return BeanMapper.mapList(list, [(${table.className})]VO.class);
+    }
+}

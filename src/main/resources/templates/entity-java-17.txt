@@ -1,0 +1,30 @@
+package [(${config.packageName})].module.[(${table.config.catalog})].entity;
+
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.extension.activerecord.Model;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.experimental.Accessors;
+[# th:each="item,stat: ${table.dbType}"]
+[(${item})]
+[/]
+/**
+* [(${table.describe})]
+*/
+@Data
+@Accessors(chain = true)
+@EqualsAndHashCode(callSuper = false)
+@TableName("[(${table.name})]")
+public class [(${table.className})]Entity extends Model<[(${table.className})]Entity> {
+[# th:each="item,stat: ${table.children}"]
+    /**
+     * [(${item.describe})]
+     */
+    [# th:if="${item.name != 'id'}"]@TableField("[(${item.name})]")[/][# th:if="${item.name == 'id'}"]@TableId(value = "id", type = IdType.ASSIGN_ID)[/]
+    private [(${item.fieldType})] [(${item.javaName})];
+
+[/]
+}

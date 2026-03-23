@@ -1,0 +1,27 @@
+package [(${config.packageName})].module.[(${table.config.catalog})].dto;
+
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.experimental.Accessors;
+import [(${config.packageName})].model.dto.BaseDTO;
+[# th:each="item,stat: ${table.dbType}"]
+[(${item})]
+[/]
+/**
+* [(${table.describe})]
+*/
+@Data
+@Accessors(chain = true)
+@EqualsAndHashCode(callSuper = false)
+@Schema(name="[(${table.describe})]", description="[(${table.describe})]")
+public class [(${table.className})]DTO extends BaseDTO {
+[# th:each="item,stat: ${table.children}"]
+    /**
+     * [(${item.describe})]
+     */
+    @Schema(name = "[(${item.describe})]", requiredMode = Schema.RequiredMode.REQUIRED)
+    private [(${item.fieldType})] [(${item.javaName})];
+
+[/]
+}
