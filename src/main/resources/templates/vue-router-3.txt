@@ -54,7 +54,6 @@ const routes = [
           parent: {
             title: i18n.global.t('[(${table.config.catalog})].[(${table.config.i18n})].title'),
             url: '/[(${table.config.catalog})]/[(${table.config.path})]',
-            previous: ''
           },
           actions: {
             '[(${table.config.routerName})]-add': i18n.global.t('[(${table.config.catalog})].[(${table.config.i18n})].add'),
@@ -75,7 +74,6 @@ const routes = [
           parent: {
             title: i18n.global.t('[(${table.config.catalog})].[(${table.config.i18n})].title'),
             url: '/[(${table.config.catalog})]/[(${table.config.path})]',
-            previous: '/[(${table.config.catalog})]/[(${table.config.path})]'
           },
           crumbs: [
             {

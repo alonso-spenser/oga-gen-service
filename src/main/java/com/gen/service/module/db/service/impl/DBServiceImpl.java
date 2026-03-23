@@ -277,8 +277,8 @@ public class DBServiceImpl implements DBService {
             case "id":
                 filedTypeVO.setName("Long");
                 filedTypeVO.setValue("0");
-                filedTypeVO.setTsType("bigint");
-                filedTypeVO.setTsDefaultValue("0n");
+                filedTypeVO.setTsType("number");
+                filedTypeVO.setTsDefaultValue("0");
                 break;
             case "date":
             case "time":
@@ -512,7 +512,7 @@ public class DBServiceImpl implements DBService {
         map.put("controller-java", new GenerateFileDTO().setPath(String.format("%s/controller/api", config.getJavaPath()))
                 .setFileName(String.format("%s/controller/api/%sApiController.java", config.getJavaPath(), config.getPrefix()))
         );
-        map.put("dto-java",  new GenerateFileDTO().setPath(String.format("%s/dto", config.getJavaPath()))
+        map.put("dto-java", new GenerateFileDTO().setPath(String.format("%s/dto", config.getJavaPath()))
                 .setFileName(String.format("%s/dto/%sDTO.java", config.getJavaPath(), config.getPrefix()))
         );
         map.put("vo-java", new GenerateFileDTO().setPath(String.format("%s/vo", config.getJavaPath()))

@@ -24,7 +24,7 @@ public class [(${table.className})]Entity extends Model<[(${table.className})]En
     /**
      * [(${item.describe})]
      */
-    [# th:if="${item.name != 'id'}"]@TableField("[(${item.name})]")[/][# th:if="${item.name == 'id'}"]@TableId(value = "id", type = IdType.ID_WORKER_STR)[/]
+    [# th:if="${item.name != 'id'}"]@TableField("[(${item.name})]")[/][# th:if="${item.name == 'id'}"]@TableId(value = "id", type = IdType.ASSIGN_ID)[/]
     private [(${item.fieldType})] [(${item.javaName})];
 
 [/]
