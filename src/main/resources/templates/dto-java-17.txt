@@ -14,13 +14,13 @@ import [(${config.packageName})].model.dto.BaseDTO;
 @Data
 @Accessors(chain = true)
 @EqualsAndHashCode(callSuper = false)
-@Schema(name="[(${table.describe})]", description="[(${table.describe})]")
+@Schema(name = "[(${table.describe})]", description = "[(${table.describe})]")
 public class [(${table.className})]DTO extends BaseDTO {
 [# th:each="item,stat: ${table.children}"]
     /**
      * [(${item.describe})]
      */
-    @Schema(name = "[(${item.describe})]", requiredMode = Schema.RequiredMode.REQUIRED)
+    @Schema(description = "[(${item.describe})]", requiredMode = Schema.RequiredMode.REQUIRED)
     private [(${item.fieldType})] [(${item.javaName})];
 
 [/]

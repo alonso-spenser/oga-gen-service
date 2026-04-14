@@ -6,7 +6,7 @@ import { CreatePageStore } from "../create-page-store";
  */
 export interface [# th:text="${table.className}" /]Result {
 [# th:each="item, stat: ${table.children}"]
-  [# th:text="${item.javaName}" /]?: [# th:text="${item.tsType}" /];
+  [# th:text="${item.javaName}" /]?: [# th:utext="${item.tsType}" /];
 [/]
 }
 
@@ -15,7 +15,7 @@ export interface [# th:text="${table.className}" /]Result {
  */
 export interface [# th:text="${table.className}" /]Request {
 [# th:each="item, stat: ${table.children}"]
-  [# th:text="${item.javaName}" /]?: [# th:text="${item.tsType}" /];
+  [# th:text="${item.javaName}" /]?: [# th:utext="${item.tsType}" /];
 [/]
 }
 

@@ -14,13 +14,13 @@ import [(${config.packageName})].model.vo.BaseVO;
 @Data
 @Accessors(chain = true)
 @EqualsAndHashCode(callSuper = false)
-@Schema(name="[(${table.describe})]", description="[(${table.describe})]")
+@Schema(name = "[(${table.describe})]", description = "[(${table.describe})]")
 public class [(${table.className})]VO extends BaseVO {
 [# th:each="item,stat: ${table.children}"]
     /**
      * [(${item.describe})]
      */
-    @Schema(name = "[(${item.describe})]")
+    @Schema(description = "[(${item.describe})]")
     private [(${item.fieldType})] [(${item.javaName})];
 
 [/]

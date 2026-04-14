@@ -1,7 +1,7 @@
 <template>
   <oga-page :offset="240" :percentage="100" v-loading="state.loading">
     <template #navigation>
-      <div class="oga-navigation-item">
+      <div class="is-right">
         <el-button class="el-material-button" link @click="add[(${table.config.fun})]Drawer">
           <oga-icon name="plus"></oga-icon>
         </el-button>

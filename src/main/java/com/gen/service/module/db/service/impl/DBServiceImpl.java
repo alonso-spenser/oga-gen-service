@@ -239,6 +239,13 @@ public class DBServiceImpl implements DBService {
                 filedTypeVO.setTsType("string");
                 filedTypeVO.setTsDefaultValue("");
                 break;
+            case "json":
+                filedTypeVO.setName("Map<String, Object>");
+                filedTypeVO.setValue("new HashMap<>();");
+                filedTypeVO.setTsType("Record<string, any>");
+                filedTypeVO.setTsDefaultValue("{}");
+                filedTypeVO.setDbType("import java.util.Map;");
+                break;
             case "tinyint":
             case "int":
             case "smallint":

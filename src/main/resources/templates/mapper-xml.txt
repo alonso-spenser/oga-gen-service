@@ -4,8 +4,13 @@
 
     <resultMap id="BaseResultMap" type="[(${config.packageName})].module.[(${table.config.catalog})].entity.[(${table.className})]Entity">
     [# th:each="item,stat: ${table.children}"]
-        <id column="[(${item.name})]" property="[(${item.javaName})]" />
-    [/]
+        [# th:if="${item.name == 'id' && item.dbType != 'json'}"]<id column="[(${item.name})]" property="[(${item.javaName})]" />[/][# th:if="${item.name != 'id' && item.dbType != 'json'}"]<result column="[(${item.name})]" property="[(${item.javaName})]" />[/][# th:if="${item.dbType == 'json'}"]
+        <!-- ✅ JSON Field -->
+        <result column="[(${item.name})]"
+                property="[(${item.javaName})]"
+                typeHandler="com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler"/>
+    [/][/]
+
     </resultMap>
 
     <sql id="Base_Column_List">
